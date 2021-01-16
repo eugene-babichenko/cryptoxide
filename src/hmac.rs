@@ -41,9 +41,8 @@ fn expand_key<D: Digest>(digest: &mut D, key: &[u8]) -> Vec<u8> {
     if key.len() <= bs {
         cryptoutil::copy_memory(key, &mut expanded_key);
     } else {
-        let output_size = digest.output_bytes();
         digest.input(key);
-        digest.result(&mut expanded_key[..output_size]);
+        digest.result(&mut expanded_key[..D::OUTPUT_BYTES]);
         digest.reset();
     }
     expanded_key
@@ -93,8 +92,7 @@ impl<D: Digest> Mac for Hmac<D> {
     }
 
     fn result(&mut self) -> MacResult {
-        let output_size = self.digest.output_bytes();
-        let mut code: Vec<u8> = repeat(0).take(output_size).collect();
+        let mut code: Vec<u8> = repeat(0).take(D::OUTPUT_BYTES).collect();
 
         self.raw_result(&mut code);
 
@@ -116,7 +114,7 @@ impl<D: Digest> Mac for Hmac<D> {
     }
 
     fn output_bytes(&self) -> usize {
-        self.digest.output_bytes()
+        D::OUTPUT_BYTES
     }
 }
 
