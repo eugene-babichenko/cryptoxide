@@ -100,3 +100,27 @@ pub fn pbkdf2<M: Mac>(mac: &mut M, salt: &[u8], c: u32, output: &mut [u8]) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hmac::Hmac;
+    use crate::sha2::Sha256;
+
+    #[test]
+    fn test_vector() {
+        let p = b"password";
+        let s = b"salt";
+        let c = 1;
+        let expected = [
+            0x12, 0x0f, 0xb6, 0xcf, 0xfc, 0xf8, 0xb3, 0x2c, 0x43, 0xe7, 0x22, 0x52, 0x56, 0xc4,
+            0xf8, 0x37, 0xa8, 0x65, 0x48, 0xc9, 0x2c, 0xcc, 0x35, 0x48, 0x08, 0x05, 0x98, 0x7c,
+            0xb7, 0x0b, 0xe1, 0x7b,
+        ];
+        let mut out = [0u8; 32];
+
+        let mut mac = Hmac::new(Sha256::new(), p);
+        pbkdf2(&mut mac, s, c, &mut out);
+        assert_eq!(expected, out)
+    }
+}
